@@ -1,37 +1,73 @@
 document.addEventListener('DOMContentLoaded', () => {
+    let numbers = [];
+    let operations = [];
     // Selecciona todos los botones de números y el campo de entrada
     const numberButtons = document.querySelectorAll('.buttons');
-    const operationButtons=document.querySelectorAll('.operations-buttons');
-    const inputField = document.getElementById('text-input');
+    const outputField = document.getElementById('output');
+    const clearButton = document.getElementById('clear');
 
-    // Añade un evento de clic a cada botón de número
+    // Add click event for whole buttons
     numberButtons.forEach(button => {
         button.addEventListener('click', () => {
-            // Añade el número del botón al valor actual del campo de entrada
-            inputField.value += button.textContent+" ";
+            let digito = button.textContent;
+            let temporalNumber = "";
+            // Add the button clicked content to the output
+            outputField.value += button.textContent + "";
+            if (button.textContent != "+" && button.textContent != "-" && button.textContent != "*" && button.textContent != "÷") {
+                temporalNumber += Number(digito);
+            } else if (button.textContent == "=") {
+                outputField.value = operate(numbers, operations);
+
+            }
+            else {
+                operations.push(digito);
+                numbers.push(temporalNumber);
+
+                //Reset value of this variable
+                temporalNumber = "";
+            }
+
         });
     });
-    operationButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            // Añade el número del botón al valor actual del campo de entrada
-            inputField.value += button.textContent+" ";
-        });
-    });
+    //Remove output content
+    clearButton.addEventListener('click', () => {
+        outputField.value = "";
+    })
 });
+function operate(numbers, operations) {
+    // Prioridad de multiplicación y división
+    for (let i = 0; i < operations.length; i++) {
+        if (operations[i] === '*' || operations[i] === '÷') {
+            let resultado = operacion(numbers[i], numbers[i + 1], operations[i]);
+            // Reemplaza los dos números usados con el resultado
+            numbers.splice(i, 2, resultado);
+            // Elimina la operación usada
+            operations.splice(i, 1);
+            i--;  // Retrocede el índice para procesar la nueva operación en esa posición
+        }
+    }
 
-let firstNumber = 0;
-let operation = "";
-let secondNumber = 0;
+    // Luego, suma y resta
+    let resultadoFinal = numbers[0];
+    for (let i = 0; i < operations.length; i++) {
+        resultadoFinal = operacion(resultadoFinal, numbers[i + 1], operations[i]);
+    }
 
-function operate(firstNumber, operation, secondNumber) {
-
+    return resultadoFinal;
 }
-function add(numbers) {
-    // Extrae los valores del objeto kwargs
-    const values = Object.values(numbers);
-
-    // Suma todos los valores
-    const sum = values.reduce((total, current) => total + current, 0);
-
-    return sum;
+function add(firstNumber, secondNumber) {
+    return firstNumber + secondNumber;
+}
+function subtract(firstNumber, secondNumber) {
+    return firstNumber - secondNumber;
+}
+function multiply(firstNumber, secondNumber) {
+    return firstNumber * secondNumber;
+}
+function divide(firstNumber, secondNumber) {
+    if (firstNumber !== 0) {
+        return firstNumber / secondNumber;
+    } else {
+        alert("No se puede dividir por 0")
+    }
 }
