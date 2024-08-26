@@ -1,73 +1,89 @@
-document.addEventListener('DOMContentLoaded', () => {
-    let numbers = [];
-    let operations = [];
-    // Selecciona todos los botones de números y el campo de entrada
-    const numberButtons = document.querySelectorAll('.buttons');
-    const outputField = document.getElementById('output');
-    const clearButton = document.getElementById('clear');
+let numbers = [];
+let operations = [];
+let temporalNumber = "";
 
-    // Add click event for whole buttons
-    numberButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            let digito = button.textContent;
-            let temporalNumber = "";
-            // Add the button clicked content to the output
-            outputField.value += button.textContent + "";
-            if (button.textContent != "+" && button.textContent != "-" && button.textContent != "*" && button.textContent != "÷") {
-                temporalNumber += Number(digito);
-            } else if (button.textContent == "=") {
-                outputField.value = operate(numbers, operations);
+// Select and save into variables whole buttons needed
+const numberButtons = document.querySelectorAll('.buttons');
+const outputField = document.getElementById('output');
+const clearButton = document.getElementById('clear');
 
-            }
-            else {
-                operations.push(digito);
-                numbers.push(temporalNumber);
+// Add click event for whole buttons
+numberButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        let digito = button.textContent;
 
-                //Reset value of this variable
-                temporalNumber = "";
-            }
-
-        });
+        // If the clicked button is a number, accumulate it in temporalNumber
+        if (!isNaN(digito) || digito === ".") {
+            temporalNumber += digito;
+            outputField.value += digito;
+        } 
+        // If the clicked button is an operation
+        else if (digito === "+" || digito === "-" || digito === "*" || digito === "÷") {
+            // Push the current temporalNumber to numbers array
+            numbers.push(Number(temporalNumber));
+            operations.push(digito);
+            temporalNumber = "";  // Reset the temporalNumber for the next number
+            outputField.value += digito;
+        } 
+        // If the clicked button is the equals sign
+        else if (digito === "=") {
+            numbers.push(Number(temporalNumber));  // Push the last number
+            outputField.value = operate(numbers, operations);
+            // Reset arrays for next operation
+            numbers = [];
+            operations = [];
+            temporalNumber = outputField.value;  // Save the result in temporalNumber for further calculations
+        }
     });
-    //Remove output content
-    clearButton.addEventListener('click', () => {
-        outputField.value = "";
-    })
 });
+
+//Remove output content
+clearButton.addEventListener('click', () => {
+    outputField.value = "";
+    numbers = [];
+    operations = [];
+    temporalNumber = "";
+});
+
 function operate(numbers, operations) {
-    // Prioridad de multiplicación y división
+    //Assign to this variable the first number of the array
+    let resultadoFinal = numbers[0];
+    // First I evaluate multiply and divide, then the others operations
     for (let i = 0; i < operations.length; i++) {
-        if (operations[i] === '*' || operations[i] === '÷') {
-            let resultado = operacion(numbers[i], numbers[i + 1], operations[i]);
-            // Reemplaza los dos números usados con el resultado
-            numbers.splice(i, 2, resultado);
-            // Elimina la operación usada
-            operations.splice(i, 1);
-            i--;  // Retrocede el índice para procesar la nueva operación en esa posición
+        if (operations[i] === '*') {
+            resultadoFinal = multiply(resultadoFinal, numbers[i + 1]);
+            console.log("Primero la multi: ", resultadoFinal);            
+        } else if (operations[i] === '÷') {
+            resultadoFinal = divide(resultadoFinal, numbers[i + 1]);
+            console.log("Segundo dividimos la suma: ", resultadoFinal);
+        } else if (operations[i] === '+') {
+            resultadoFinal = add(resultadoFinal, numbers[i + 1]);
+            console.log("Tercero la suma: ", resultadoFinal);
+        } else if (operations[i] === '-') {
+            resultadoFinal = subtract(resultadoFinal, numbers[i + 1]);
+            console.log("Cuarto la resta: ", resultadoFinal);
         }
     }
-
-    // Luego, suma y resta
-    let resultadoFinal = numbers[0];
-    for (let i = 0; i < operations.length; i++) {
-        resultadoFinal = operacion(resultadoFinal, numbers[i + 1], operations[i]);
-    }
-
     return resultadoFinal;
 }
+
 function add(firstNumber, secondNumber) {
     return firstNumber + secondNumber;
 }
+
 function subtract(firstNumber, secondNumber) {
     return firstNumber - secondNumber;
 }
+
 function multiply(firstNumber, secondNumber) {
     return firstNumber * secondNumber;
 }
+
 function divide(firstNumber, secondNumber) {
-    if (firstNumber !== 0) {
+    if (secondNumber !== 0) {
         return firstNumber / secondNumber;
     } else {
-        alert("No se puede dividir por 0")
+        alert("No se puede dividir por 0");
+        return 0;
     }
 }
